@@ -5,7 +5,7 @@
 #include "rendering/Renderer.hpp"
 #include "util/General.hpp"
 
-#define CHUNK_SIZE 16
+#define CHUNK_SIZE 6
 
 struct ChunkData : IPackagable
 {
