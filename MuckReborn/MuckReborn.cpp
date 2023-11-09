@@ -41,8 +41,6 @@ int main()
 		window.UpdateColors();
 
 		Input::UpdateInput();
-		
-		Input::UpdateInput();
 		player.Update();
 		Renderer::RenderObjects(player.data.camera);
 
