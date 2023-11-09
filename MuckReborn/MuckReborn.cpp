@@ -6,10 +6,11 @@
 #include "rendering/Model.hpp"
 #include "rendering/Renderer.hpp"
 #include "rendering/TextureManager.hpp"
+#include "world/Chunk.hpp"
 
 Player player;
 Window window;
-RenderableObject* model;
+Chunk* model;
 
 int main()
 {
@@ -21,7 +22,7 @@ int main()
 	TextureManager::RegisterTexture(Texture::Register("textures/terrain.png", "terrain_atlas"));
 	TextureManager::RegisterTexture(Texture::Register("models/Tisch_t.png", "Tisch_t"));
 
-	window.GenerateWindow("Muck Reborn* 0.0.4", glm::ivec2{ 750, 450 }, glm::vec3{ 0.0f, 0.34f, 0.51f });
+	window.GenerateWindow("Muck Reborn* 0.0.7", glm::ivec2{ 750, 450 }, glm::vec3{ 0.0f, 0.34f, 0.51f });
 	Window::mainWindow = window;
 	EventSystem::DispatchEvent(EventType::MR_PRE_INIT_EVENT, NULL);
 	
@@ -30,16 +31,15 @@ int main()
 	player.InitalizePlayer({ 0.0f, 0.0f, 0.0f });
 	EventSystem::DispatchEvent(EventType::MR_INIT_EVENT, NULL);
 	
-	model = new RenderableObject();
-	model->GenerateTestObject();
-	Renderer::RegisterRenderableObject(model);
+	model = new Chunk();
+	model->InitalizeChunk({0, 0, 0});
 
 	Logger_WriteConsole("Hello, World!", LogLevel::INFO);
 
 	while (!window.ShouldClose())
 	{
 		window.UpdateColors();
-
+		
 		Input::UpdateInput();
 		player.Update();
 		Renderer::RenderObjects(player.data.camera);
@@ -50,6 +50,7 @@ int main()
 	}
 
 	window.CleanUp();
+	model->CleanUp();
 	Renderer::CleanUpObjects();
 
 	EventSystem::DispatchEvent(EventType::MR_CLEANUP_EVENT, NULL);

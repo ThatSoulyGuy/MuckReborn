@@ -165,6 +165,7 @@
     <ClInclude Include="MuckReborn\include\core\Settings.hpp" />
     <ClInclude Include="MuckReborn\include\core\Window.hpp" />
     <ClInclude Include="MuckReborn\include\gameplay\Player.hpp" />
+    <ClInclude Include="MuckReborn\include\math\Noise.hpp" />
     <ClInclude Include="MuckReborn\include\math\Transform.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\Camera.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\Model.hpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="MuckReborn\include\util\ANSIFormatter.hpp" />
     <ClInclude Include="MuckReborn\include\util\General.hpp" />
     <ClInclude Include="MuckReborn\include\util\Pair.hpp" />
+    <ClInclude Include="MuckReborn\include\world\Chunk.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />

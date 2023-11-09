@@ -2,6 +2,7 @@
 #define GENERAL_HPP
 
 #include <iostream>
+#include <random>
 #include <iomanip>
 #include <openssl/md5.h>
 
@@ -9,6 +10,15 @@
 
 struct RenderableData;
 struct RenderableObject;
+
+float RandomRange(float min, float max) 
+{
+    static std::random_device rd;
+    static std::mt19937 eng(rd());
+    std::uniform_real_distribution<> distr(min, max);
+
+    return static_cast<float>(distr(eng));
+}
 
 std::string GenerateMD5(const std::string& data)
 {
