@@ -74,7 +74,7 @@ private:
 
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
-            Vertex vertex = Vertex::Register({}, {}, {});
+            Vertex vertex = Vertex::Register({}, {}, {}, {});
 
             vertex.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
             

@@ -23,14 +23,16 @@ struct Vertex : public IPackagable
 {
 	glm::vec3 position;
 	glm::vec3 color;
+	glm::vec3 normal;
 	glm::vec2 textureCoords;
 
-	static Vertex Register(const glm::vec3& position, const glm::vec3& color, const glm::vec2& textureCoords)
+	static Vertex Register(const glm::vec3& position, const glm::vec3& color, const glm::vec3& normal, const glm::vec2& textureCoords)
 	{
 		Vertex out = {};
 
 		out.position = position;
 		out.color = color;
+		out.normal = normal;
 		out.textureCoords = textureCoords;
 
 		return out;
@@ -84,8 +86,11 @@ public:
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
 		glEnableVertexAttribArray(1);
 
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, textureCoords));
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 		glEnableVertexAttribArray(2);
+
+		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, textureCoords));
+		glEnableVertexAttribArray(3);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
@@ -106,37 +111,37 @@ public:
 
 		std::vector<Vertex> vertices
 		{
-			Vertex::Register({0.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
-			Vertex::Register({0.0f, 0.5f, 0.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
-			Vertex::Register({0.5f, 0.5f, 0.0f}, DEFAULT_COLOR, {1.0f, 1.0f}),
-			Vertex::Register({0.5f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
+			Vertex::Register({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
+			Vertex::Register({0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, -1.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
+			Vertex::Register({0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, -1.0f}, DEFAULT_COLOR, {1.0f, 1.0f}),
+			Vertex::Register({0.5f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
 
-			Vertex::Register({0.0f, 0.0f, 0.5f}, DEFAULT_COLOR, {0.0f, 0.0f}),
-			Vertex::Register({0.0f, 0.5f, 0.5f}, DEFAULT_COLOR, {1.0f, 0.0f}),
-			Vertex::Register({0.5f, 0.5f, 0.5f}, DEFAULT_COLOR, {1.0f, 1.0f}),
-			Vertex::Register({0.5f, 0.0f, 0.5f}, DEFAULT_COLOR, {0.0f, 1.0f}),
-
-
-			Vertex::Register({0.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
-			Vertex::Register({0.0f, 0.5f, 0.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
-			Vertex::Register({0.0f, 0.5f, 0.5f}, DEFAULT_COLOR, {1.0f, 1.0f}),
-			Vertex::Register({0.0f, 0.0f, 0.5f}, DEFAULT_COLOR, {0.0f, 1.0f}),
-
-			Vertex::Register({0.5f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
-			Vertex::Register({0.5f, 0.5f, 0.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
-			Vertex::Register({0.5f, 0.5f, 0.5f}, DEFAULT_COLOR, {1.0f, 1.0f}),
-			Vertex::Register({0.5f, 0.0f, 0.5f}, DEFAULT_COLOR, {0.0f, 1.0f}),
+			Vertex::Register({0.0f, 0.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
+			Vertex::Register({0.0f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
+			Vertex::Register({0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, DEFAULT_COLOR, {1.0f, 1.0f}),
+			Vertex::Register({0.5f, 0.0f, 0.5f}, {0.0f, 0.0f, 1.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
 
 
-			Vertex::Register({0.0f, 0.5f, 0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
-			Vertex::Register({0.0f, 0.5f, 0.5f}, DEFAULT_COLOR, {1.0f, 0.0f}),
-			Vertex::Register({0.5f, 0.5f, 0.5f}, DEFAULT_COLOR, {1.0f, 1.0f}),
-			Vertex::Register({0.5f, 0.5f, 0.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
+			Vertex::Register({0.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
+			Vertex::Register({0.0f, 0.5f, 0.0f}, {-1.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
+			Vertex::Register({0.0f, 0.5f, 0.5f}, {-1.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {1.0f, 1.0f}),
+			Vertex::Register({0.0f, 0.0f, 0.5f}, {-1.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
 
-			Vertex::Register({0.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
-			Vertex::Register({0.0f, 0.0f, 0.5f}, DEFAULT_COLOR, {1.0f, 0.0f}),
-			Vertex::Register({0.5f, 0.0f, 0.5f}, DEFAULT_COLOR, {1.0f, 1.0f}),
-			Vertex::Register({0.5f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
+			Vertex::Register({0.5f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
+			Vertex::Register({0.5f, 0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
+			Vertex::Register({0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {1.0f, 1.0f}),
+			Vertex::Register({0.5f, 0.0f, 0.5f}, {1.0f, 0.0f, 0.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
+
+
+			Vertex::Register({0.0f, 0.5f, 0.0f}, {0.0f, -1.0f,  0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
+			Vertex::Register({0.0f, 0.5f, 0.5f}, {0.0f, -1.0f,  0.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
+			Vertex::Register({0.5f, 0.5f, 0.5f}, {0.0f, -1.0f,  0.0f}, DEFAULT_COLOR, {1.0f, 1.0f}),
+			Vertex::Register({0.5f, 0.5f, 0.0f}, {0.0f, -1.0f,  0.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
+
+			Vertex::Register({0.0f, 0.0f, 0.0f}, {0.0f, 1.0f,  0.0f}, DEFAULT_COLOR, {0.0f, 0.0f}),
+			Vertex::Register({0.0f, 0.0f, 0.5f}, {0.0f, 1.0f,  0.0f}, DEFAULT_COLOR, {1.0f, 0.0f}),
+			Vertex::Register({0.5f, 0.0f, 0.5f}, {0.0f, 1.0f,  0.0f}, DEFAULT_COLOR, {1.0f, 1.0f}),
+			Vertex::Register({0.5f, 0.0f, 0.0f}, {0.0f, 1.0f,  0.0f}, DEFAULT_COLOR, {0.0f, 1.0f}),
 		};
 
 		std::vector<unsigned int> indices
@@ -263,6 +268,29 @@ namespace Renderer
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, value->data.transform.position);
 			//model = glm::rotate(model, value->data.transform.rotationIndex, value->data.transform.rotation);
+
+			glm::vec3 diffuseColor = glm::vec3{1.0f, 1.0f, 1.0f} * glm::vec3(0.5f);
+			glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+
+			value->data.shader.SetUniform("viewPos", camera.data.transform.position);
+
+			value->data.shader.SetUniform("dirLight.direction", 0.45994705f, -0.88781524f, 0.015258028f);
+			value->data.shader.SetUniform("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+			value->data.shader.SetUniform("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+			value->data.shader.SetUniform("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
+			value->data.shader.SetUniform("pointLights[0].position", 0.0f, 5.0f, 0.0f);
+			value->data.shader.SetUniform("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+			value->data.shader.SetUniform("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+			value->data.shader.SetUniform("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+			value->data.shader.SetUniform("pointLights[0].constant", 1.0f);
+			value->data.shader.SetUniform("pointLights[0].linear", 0.09f);
+			value->data.shader.SetUniform("pointLights[0].quadratic", 0.032f);
+			value->data.shader.SetUniform("pointLights[0].isActive", true);
+
+			value->data.shader.SetUniform("material.specular", 1.0f, 1.0f, 1.0f);
+			value->data.shader.SetUniform("material.diffuse", 1.0f, 1.0f, 1.0f);
+			value->data.shader.SetUniform("material.shininess", 32.0f);
 
 			value->data.shader.SetUniform("projection", camera.data.matrices.projection);
 			value->data.shader.SetUniform("view", camera.data.matrices.view);

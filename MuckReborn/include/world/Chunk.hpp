@@ -62,10 +62,17 @@ public:
 
 	void GenerateQuad(const glm::vec3& position)
 	{
-		data.vertices.push_back(Vertex::Register({ 0.0f + position.x, 0.125f + position.y, 0.0f + position.z }, DEFAULT_COLOR, { 0.0f, 0.0f }));
-		data.vertices.push_back(Vertex::Register({ 0.0f + position.x, 0.125f + position.y, 0.125f + position.z }, DEFAULT_COLOR, { 0.0f, 1.0f }));
-		data.vertices.push_back(Vertex::Register({ 0.125f + position.x, 0.125f + position.y, 0.125f + position.z }, DEFAULT_COLOR, { 1.0f, 0.0f }));
-		data.vertices.push_back(Vertex::Register({ 0.125f + position.x, 0.125f + position.y, 0.0f + position.z }, DEFAULT_COLOR, { 1.0f, 1.0f }));
+		float height00 = GetHeight(position.x, position.z);
+		float height01 = GetHeight(position.x, position.z + 0.125f);
+		float height10 = GetHeight(position.x + 0.125f, position.z);
+		float height11 = GetHeight(position.x + 0.125f, position.z + 0.125f);
+
+		glm::vec3 normal = CalculateNormal(position.x, position.z);
+
+		data.vertices.push_back(Vertex::Register({ position.x, height00, position.z }, normal, DEFAULT_COLOR, { 0.0f, 0.0f }));
+		data.vertices.push_back(Vertex::Register({ position.x, height01, position.z + 0.125f }, normal, DEFAULT_COLOR, { 0.0f, 1.0f }));
+		data.vertices.push_back(Vertex::Register({ position.x + 0.125f, height11, position.z + 0.125f }, normal, DEFAULT_COLOR, { 1.0f, 1.0f }));
+		data.vertices.push_back(Vertex::Register({ position.x + 0.125f, height10, position.z }, normal, DEFAULT_COLOR, { 1.0f, 0.0f }));
 
 		data.indices.push_back(data.indiceIndex);
 		data.indices.push_back(1 + data.indiceIndex);
@@ -88,6 +95,21 @@ public:
 	ChunkData data;
 
 private:
+
+	glm::vec3 CalculateNormal(float x, float z)
+	{
+		glm::vec3 tangentX = glm::vec3(0.125f, GetHeight(x + 0.125f, z) - GetHeight(x, z), 0.0f);
+		glm::vec3 tangentZ = glm::vec3(0.0f, GetHeight(x, z + 0.125f) - GetHeight(x, z), 0.125f);
+
+		glm::vec3 normal = glm::normalize(glm::cross(tangentX, tangentZ));
+
+		return normal;
+	}
+
+	float GetHeight(float x, float z)
+	{
+		return noise->FractalNoise(CHUNK_SIZE * 4, x, z) * scale + offset;
+	}
 
 	Noise* noise = nullptr;
 	float scale = 1.0f;
