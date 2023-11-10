@@ -113,26 +113,26 @@ namespace LightingManager
     {
         for (auto& [key, object] : Renderer::renderableObjects)
         {
-            object->data.shader.SetUniform("viewPos", camera.data.transform.position);
+            object->data.shaders["default"].SetUniform("viewPos", camera.data.transform.position);
 
-            object->data.shader.SetUniform("dirLight.direction", directional.direction);
-            object->data.shader.SetUniform("dirLight.ambient", directional.ambient);
-            object->data.shader.SetUniform("dirLight.diffuse", directional.diffuse);
-            object->data.shader.SetUniform("dirLight.specular", directional.specular);
+            object->data.shaders["default"].SetUniform("dirLight.direction", directional.direction);
+            object->data.shaders["default"].SetUniform("dirLight.ambient", directional.ambient);
+            object->data.shaders["default"].SetUniform("dirLight.diffuse", directional.diffuse);
+            object->data.shaders["default"].SetUniform("dirLight.specular", directional.specular);
 
             if (!pointLights.empty())
             {
                 int plCount = 0;
                 for (auto& [key, value] : pointLights)
                 {
-                    object->data.shader.SetUniform("pointLights[" + std::to_string(plCount) + "].position", value.position);
-                    object->data.shader.SetUniform("pointLights[" + std::to_string(plCount) + "].ambient", value.ambient);
-                    object->data.shader.SetUniform("pointLights[" + std::to_string(plCount) + "].diffuse", value.diffuse);
-                    object->data.shader.SetUniform("pointLights[" + std::to_string(plCount) + "].specular", value.specular);
-                    object->data.shader.SetUniform("pointLights[" + std::to_string(plCount) + "].constant", value.constant);
-                    object->data.shader.SetUniform("pointLights[" + std::to_string(plCount) + "].linear", value.linear);
-                    object->data.shader.SetUniform("pointLights[" + std::to_string(plCount) + "].quadratic", value.quadratic);
-                    object->data.shader.SetUniform("pointLights[" + std::to_string(plCount) + "].isActive", true);
+                    object->data.shaders["default"].SetUniform("pointLights[" + std::to_string(plCount) + "].position", value.position);
+                    object->data.shaders["default"].SetUniform("pointLights[" + std::to_string(plCount) + "].ambient", value.ambient);
+                    object->data.shaders["default"].SetUniform("pointLights[" + std::to_string(plCount) + "].diffuse", value.diffuse);
+                    object->data.shaders["default"].SetUniform("pointLights[" + std::to_string(plCount) + "].specular", value.specular);
+                    object->data.shaders["default"].SetUniform("pointLights[" + std::to_string(plCount) + "].constant", value.constant);
+                    object->data.shaders["default"].SetUniform("pointLights[" + std::to_string(plCount) + "].linear", value.linear);
+                    object->data.shaders["default"].SetUniform("pointLights[" + std::to_string(plCount) + "].quadratic", value.quadratic);
+                    object->data.shaders["default"].SetUniform("pointLights[" + std::to_string(plCount) + "].isActive", true);
 
                     plCount++;
                 }
@@ -143,24 +143,24 @@ namespace LightingManager
                 int slCount = 0;
                 for (auto& [key, value] : spotLights)
                 {
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].position", value.position);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].ambient", value.ambient);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].diffuse", value.diffuse);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].specular", value.specular);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].constant", value.constant);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].linear", value.linear);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].quadratic", value.quadratic);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].cutOff", value.cutOff);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].outurCutOff", value.outerCutOff);
-                    object->data.shader.SetUniform("spotLights[" + std::to_string(slCount) + "].isActive", true);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].position", value.position);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].ambient", value.ambient);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].diffuse", value.diffuse);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].specular", value.specular);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].constant", value.constant);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].linear", value.linear);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].quadratic", value.quadratic);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].cutOff", value.cutOff);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].outurCutOff", value.outerCutOff);
+                    object->data.shaders["default"].SetUniform("spotLights[" + std::to_string(slCount) + "].isActive", true);
 
                     slCount++;
                 }
             }
 
-            object->data.shader.SetUniform("material.specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
-            object->data.shader.SetUniform("material.diffuse", glm::vec3{ 1.0f, 1.0f, 1.0f });
-            object->data.shader.SetUniform("material.shininess", 32.0f);
+            object->data.shaders["default"].SetUniform("material.specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
+            object->data.shaders["default"].SetUniform("material.diffuse", glm::vec3{ 1.0f, 1.0f, 1.0f });
+            object->data.shaders["default"].SetUniform("material.shininess", 32.0f);
         }
     }
 }

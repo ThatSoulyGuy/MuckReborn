@@ -14,7 +14,8 @@
 enum class ShaderType
 {
 	DEFAULT,
-	CHUNK
+	CHUNK,
+	SHADOW
 };
 
 struct ShaderObject
@@ -194,14 +195,14 @@ namespace ShaderManager
 {
 	extern std::vector<ShaderObject> registeredShaders;
 
-	void RegisterShader(const ShaderObject& object)
+	void RegisterShader(ShaderObject object)
 	{
 		registeredShaders.push_back(object);
 	}
 
 	ShaderObject GetShader(ShaderType type)
 	{
-		for (ShaderObject object : registeredShaders)
+		for (auto object : registeredShaders)
 		{
 			if (object.type == type)
 				return object;

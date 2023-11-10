@@ -72,6 +72,12 @@
     <ClInclude Include="MuckReborn\include\rendering\LightingManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MuckReborn\include\rendering\ShadowManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MuckReborn\include\rendering\AmbientOcclusion.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MuckReborn\MuckReborn.cpp">
@@ -86,5 +92,7 @@
     <None Include="assets\muckreborn\shaders\chunkFragment.glsl" />
     <None Include="assets\muckreborn\shaders\defaultFragment.glsl" />
     <None Include="assets\muckreborn\shaders\defaultVertex.glsl" />
+    <None Include="assets\muckreborn\shaders\shadowFragment.glsl" />
+    <None Include="assets\muckreborn\shaders\shadowVertex.glsl" />
   </ItemGroup>
 </Project>

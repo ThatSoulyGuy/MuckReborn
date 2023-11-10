@@ -20,11 +20,12 @@ int main()
 	Settings::InitGLFW();
 	ShaderManager::RegisterShader(ShaderObject::Register("shaders/default", ShaderType::DEFAULT));
 	ShaderManager::RegisterShader(ShaderObject::Register("shaders/chunk", ShaderType::CHUNK));
+	ShaderManager::RegisterShader(ShaderObject::Register("shaders/shadow", ShaderType::SHADOW));
 	TextureManager::RegisterTexture(Texture::Register("textures/test_image.png", "test_texture"));
 	TextureManager::RegisterTexture(Texture::Register("textures/terrain.png", "terrain_atlas"));
 	TextureManager::RegisterTexture(Texture::Register("models/Tisch_t.png", "Tisch_t"));
 
-	window.GenerateWindow("Muck Reborn* 0.1.0", glm::ivec2{ 750, 450 }, glm::vec3{ 0.0f, 0.34f, 0.51f });
+	window.GenerateWindow("Muck Reborn* 0.1.1", glm::ivec2{ 750, 450 }, glm::vec3{ 0.0f, 0.34f, 0.51f });
 	Window::mainWindow = window;
 
 	EventSystem::DispatchEvent(EventType::MR_PRE_INIT_EVENT, NULL);

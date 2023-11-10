@@ -1,0 +1,6 @@
+#ifndef AMBIENT_OCCLUSION
+#define AMBIENT_OCCLUSION
+
+
+
+#endif // !AMBIENT_OCCLUSION

@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <map>
 #include <deque>
+#include <random>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -17,6 +18,7 @@
 #include "math/Transform.hpp"
 #include "rendering/Camera.hpp"
 #include "rendering/ShaderManager.hpp"
+#include "rendering/ShadowManager.hpp"
 #include "rendering/TextureManager.hpp"
 #include "util/General.hpp"
 
@@ -99,7 +101,8 @@ struct RenderableData : public IPackagable
 {
 	std::string name = "";
 	bool advanced = false;
-	ShaderObject shader = {};
+	std::map<std::string, ShaderObject> shaders = {};
+
 	Transform transform = TRANSFORM_DEFAULT;
 	std::deque<GLPointerCall> pointerCalls = {};
 	std::deque<GLBufferCall> bufferCalls = {};
@@ -112,7 +115,9 @@ struct RenderableData : public IPackagable
 	{
 		{"VAO", 0},
 		{"VBO", 0},
-		{"EBO", 0}
+		{"EBO", 0},
+		{"depthMap", 0},
+		{"depthMapFBO", 0},
 	};
 };
 
@@ -145,7 +150,8 @@ public:
 
 	void GenerateRawData()
 	{
-		data.shader.GenerateShader();
+		data.shaders["default"].GenerateShader();
+		data.shaders["shadow"].GenerateShader();
 
 		glGenVertexArrays(1, &data.buffers["VAO"]);
 		glGenBuffers(1, &data.buffers["VBO"]);
@@ -161,10 +167,13 @@ public:
 		for (auto& [key, value] : data.textures)
 			value.GenerateTexture();
 
+		data.buffers["depthMap"] = ShadowManager::CreateMap(data.buffers["depthMapFBO"]);
+
 		if (!data.advanced)
 		{
-			data.shader.Use();
-			data.shader.SetUniform("texture_diffuse1", 0);
+			data.shaders["default"].Use();
+			data.shaders["default"].SetUniform("texture_diffuse1", 0);
+			data.shaders["default"].SetUniform("shadowMap", 1);
 		}
 	}
 
@@ -230,7 +239,7 @@ public:
 		
 		data.advanced = false;
 		data.transform = TRANSFORM_DEFAULT;
-		data.shader = ShaderManager::GetShader(ShaderType::DEFAULT);
+		data.shaders["default"] = ShaderManager::GetShader(ShaderType::DEFAULT);
 		RegisterTexture(TextureManager::GetTexture("test_texture"));
 
 		ReRegister(vertices, indices);
@@ -329,7 +338,8 @@ public:
 		RenderableObject* out = new RenderableObject();
 
 		out->data.name = name;
-		out->data.shader = shader;
+		out->data.shaders.insert({ "default", shader});
+		out->data.shaders.insert({ "shadow", ShaderManager::GetShader(ShaderType::SHADOW)});
 		out->data.vertices = vertices;
 		out->data.indices = indices;
 		out->data.advanced = advanced;
@@ -361,7 +371,7 @@ public:
 		data.indices.clear();
 		data.buffers.clear();
 
-		data.shader.CleanUp();
+		data.shaders["default"].CleanUp();
 
 		Logger_FunctionEnd;
 
@@ -402,25 +412,25 @@ namespace Renderer
 				if (value->data.name == call.objectName)
 				{
 					if (call.type == "int")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<int*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<int*>(call.value));
 					else if (call.type == "float")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<float*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<float*>(call.value));
 					else if (call.type == "bool")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<bool*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<bool*>(call.value));
 
 					else if (call.type == "struct glm::vec<2,float,0>")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::vec2*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<glm::vec2*>(call.value));
 					else if (call.type == "struct glm::vec<3,float,0>")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::vec3*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<glm::vec3*>(call.value));
 					else if (call.type == "struct glm::vec<4,float,0>")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::vec4*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<glm::vec4*>(call.value));
 
 					else if (call.type == "struct glm::mat<2,2,float,0>")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::mat2*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<glm::mat2*>(call.value));
 					else if (call.type == "struct glm::mat<3,3,float,0>")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::mat3*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<glm::mat3*>(call.value));
 					else if (call.type == "struct glm::mat<4,4,float,0>")
-						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::mat4*>(call.value));
+						value->data.shaders["default"].SetUniform(call.variableName, *reinterpret_cast<glm::mat4*>(call.value));
 					else
 						Logger_ThrowError("Invalid type", "Graphical issues are imminent", false);
 				}
@@ -430,25 +440,82 @@ namespace Renderer
 		}
 	}
 
+	void RenderArea(RenderableObject*& value, ShaderObject& shader, Camera& camera)
+	{
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, value->data.transform.position);
+		//model = glm::rotate(model, value->data.transform.rotationIndex, value->data.transform.rotation);
+
+		if(shader.type != ShaderType::SHADOW)
+			PostShaderCalls();
+
+		shader.SetUniform("model", model);
+
+		glBindVertexArray(value->data.buffers["VAO"]);
+
+		if (drawLines)
+			glDrawElements(GL_LINES, value->data.indices.size(), GL_UNSIGNED_INT, 0);
+		else
+			glDrawElements(GL_TRIANGLES, value->data.indices.size(), GL_UNSIGNED_INT, 0);
+	}
+
+	glm::mat4 RenderShadows(RenderableObject*& value, Camera& camera)
+	{
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, value->data.transform.position);
+
+		glm::mat4 lightProjection, lightView;
+		glm::mat4 lightSpaceMatrix;
+		float near_plane = 1.0f, far_plane = 7.5f;
+		
+		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+		lightView = glm::lookAt({0.0f, 5.0f, 0.0f}, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+		lightSpaceMatrix = lightProjection * lightView;
+		
+		value->data.shaders["shadow"].Use();
+		value->data.shaders["shadow"].SetUniform("lightSpaceMatrix", lightSpaceMatrix);
+		value->data.shaders["shadow"].SetUniform("model", model);
+
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, value->data.buffers["depthMapFBO"]);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, value->data.buffers["depthMap"]);
+
+		RenderArea(value, value->data.shaders["shadow"], camera);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glViewport(0, 0, Window::mainWindow.data.size.x, Window::mainWindow.data.size.y);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		return lightSpaceMatrix;
+	}
+
 	void RenderObjects(Camera camera)
 	{
 		for (auto& [key, value] : renderableObjects)
 		{
+			glm::mat4 lightSpaceMatrix = RenderShadows(value, camera);
+
 			int count = 0;
 			unsigned int diffuseNr = 1;
 			unsigned int specularNr = 1;
 			unsigned int normalNr = 1;
 
-			value->data.shader.Use();
+			value->data.shaders["default"].Use();
+			value->data.shaders["default"].SetUniform("projection", camera.data.matrices.projection);
+			value->data.shaders["default"].SetUniform("view", camera.data.matrices.view);
 
-			for (auto const& [key, value1] : value->data.textures)
+			for (auto const& [key, texture] : value->data.textures)
 			{
 				glActiveTexture(GL_TEXTURE0 + count);
 
 				if (value->data.advanced)
 				{
 					std::string number;
-					TextureType name = value1.properties.type;
+					TextureType name = texture.properties.type;
 					if (name == TextureType::DIFFUSE)
 						number = std::to_string(diffuseNr++);
 					else if (name == TextureType::SPECULAR)
@@ -456,30 +523,20 @@ namespace Renderer
 					else if (name == TextureType::NORMAL)
 						number = std::to_string(normalNr++);
 
-					value->data.shader.SetUniform((TextureType2String(name) + number), count);
+					value->data.shaders["default"].SetUniform((TextureType2String(name) + number), count);
 				}
 				
-				glBindTexture(GL_TEXTURE_2D, value1.textureID);
+				glBindTexture(GL_TEXTURE_2D, texture.textureID);
 
 				++count;
 			}
-
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, value->data.transform.position);
-			//model = glm::rotate(model, value->data.transform.rotationIndex, value->data.transform.rotation);
 			
-			PostShaderCalls();
+			glActiveTexture(GL_TEXTURE0 + count + 1);
+			glBindTexture(GL_TEXTURE_2D, value->data.buffers["depthBuffer"]);
 
-			value->data.shader.SetUniform("projection", camera.data.matrices.projection);
-			value->data.shader.SetUniform("view", camera.data.matrices.view);
-			value->data.shader.SetUniform("model", model);
+			value->data.shaders["default"].SetUniform("lightSpaceMatrix", lightSpaceMatrix);
 
-			glBindVertexArray(value->data.buffers["VAO"]);
-
-			if(drawLines)
-				glDrawElements(GL_LINES, value->data.indices.size(), GL_UNSIGNED_INT, 0);
-			else
-				glDrawElements(GL_TRIANGLES, value->data.indices.size(), GL_UNSIGNED_INT, 0);
+			RenderArea(value, value->data.shaders["default"], camera);
 
 			int error = glGetError();
 

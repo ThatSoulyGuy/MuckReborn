@@ -167,11 +167,13 @@
     <ClInclude Include="MuckReborn\include\gameplay\Player.hpp" />
     <ClInclude Include="MuckReborn\include\math\Noise.hpp" />
     <ClInclude Include="MuckReborn\include\math\Transform.hpp" />
+    <ClInclude Include="MuckReborn\include\rendering\AmbientOcclusion.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\Camera.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\LightingManager.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\Model.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\Renderer.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\ShaderManager.hpp" />
+    <ClInclude Include="MuckReborn\include\rendering\ShadowManager.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\TextureManager.hpp" />
     <ClInclude Include="MuckReborn\include\util\ANSIFormatter.hpp" />
     <ClInclude Include="MuckReborn\include\util\General.hpp" />
@@ -188,6 +190,8 @@
     <None Include="assets\muckreborn\shaders\chunkVertex.glsl" />
     <None Include="assets\muckreborn\shaders\defaultFragment.glsl" />
     <None Include="assets\muckreborn\shaders\defaultVertex.glsl" />
+    <None Include="assets\muckreborn\shaders\shadowFragment.glsl" />
+    <None Include="assets\muckreborn\shaders\shadowVertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
