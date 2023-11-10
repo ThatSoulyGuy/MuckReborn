@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstddef>
 #include <map>
+#include <deque>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -39,22 +40,100 @@ struct Vertex : public IPackagable
 	}
 };
 
+enum class GLPointerType
+{
+	D,
+	I
+};
+
+struct GLPointerCall
+{
+	int from = 0, to = 0, stride = 0, index = 0;
+	unsigned int type = 0;
+	bool normalized = true;
+	void* pointer = {};
+	std::string name = "";
+	GLPointerType pointerType = GLPointerType::D;
+
+	static GLPointerCall Register(int from, int to, unsigned int type, bool normalized, int stride, void* pointer, int index, const std::string& name, GLPointerType pointerType)
+	{
+		GLPointerCall out;
+
+		out.from = from;
+		out.to = to;
+		out.stride = stride;
+		out.index = index;
+		out.type = type;
+		out.normalized = normalized;
+		out.pointer = pointer;
+		out.name = name;
+		out.pointerType = pointerType;
+
+		return out;
+	}
+};
+
+struct GLBufferCall
+{
+	std::string bind = "";
+	std::string name = "";
+	unsigned int type = 0, size = 0, draw = 0;
+	void* pointer = {};
+
+	static GLBufferCall Register(unsigned int type, unsigned int size, void* pointer, unsigned int draw, const std::string& bind, const std::string& name)
+	{
+		GLBufferCall out;
+
+		out.bind = bind;
+		out.type = type;
+		out.size = size;
+		out.draw = draw;
+		out.pointer = pointer;
+		out.name = name;
+
+		return out;
+	}
+};
+
 struct RenderableData : public IPackagable
 {
 	std::string name = "";
 	bool advanced = false;
-	ShaderObject shader;
+	ShaderObject shader = {};
 	Transform transform = TRANSFORM_DEFAULT;
+	std::deque<GLPointerCall> pointerCalls = {};
+	std::deque<GLBufferCall> bufferCalls = {};
 	std::map<std::string, Texture> textures = {};
+	bool completelyReplaceDefaultGLPointerCalls = false;
 
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
+	std::vector<Vertex> vertices = {};
+	std::vector<unsigned int> indices = {};
 	std::map<std::string, unsigned int> buffers =
 	{
 		{"VAO", 0},
 		{"VBO", 0},
 		{"EBO", 0}
 	};
+};
+
+struct ShaderCall
+{
+	std::string objectName = "";
+	std::string variableName = "";
+	std::string type = "";
+	void* value = {};
+
+	static ShaderCall Register(const std::string& objectName, const std::string& variableName, const std::string& type, void* value)
+	{
+		ShaderCall out;
+
+		out.objectName = objectName;
+		out.variableName = variableName;
+		out.type = type;
+		out.value = value;
+
+		return out;
+	}
 };
 
 class RenderableObject
@@ -74,9 +153,9 @@ public:
 
 		glBindVertexArray(data.buffers["VAO"]);
 
-		glBindBuffer(GL_ARRAY_BUFFER, data.buffers["VBO"]);
-		glBufferData(GL_ARRAY_BUFFER, data.vertices.size() * sizeof(Vertex), data.vertices.data(), GL_STATIC_DRAW);
-
+		PostGLBufferCalls();
+		PostGLPointerCalls();
+		
 		glBindVertexArray(0);
 
 		for (auto& [key, value] : data.textures)
@@ -158,7 +237,94 @@ public:
 		GenerateRawData();
 	}
 
-	static RenderableObject* Register(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, bool advanced = false, const ShaderObject& shader = ShaderManager::GetShader(ShaderType::DEFAULT))
+	void RequestGLPointerCall(const GLPointerCall& call)
+	{
+		data.pointerCalls.push_back(call);
+	}
+
+	void PostGLPointerCalls()
+	{
+		if (!data.completelyReplaceDefaultGLPointerCalls)
+		{
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+			glEnableVertexAttribArray(0);
+
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+			glEnableVertexAttribArray(1);
+
+			glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+			glEnableVertexAttribArray(2);
+
+			glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, textureCoords));
+			glEnableVertexAttribArray(3);
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+
+		while (!data.pointerCalls.empty())
+		{
+			auto& call = data.pointerCalls.front();
+
+			switch (call.pointerType)
+			{
+
+			case GLPointerType::D:
+
+				glVertexAttribPointer(call.from, call.to, call.type, call.normalized, call.stride, call.pointer);
+				break;
+
+			case GLPointerType::I:
+
+				glVertexAttribIPointer(call.from, call.to, call.type, call.stride, call.pointer);
+				break;
+
+			default:
+				break;
+
+			}
+
+			glEnableVertexAttribArray(call.index);
+
+			data.pointerCalls.pop_front();
+		}
+	}
+
+	void RequestGLBufferCall(GLBufferCall call)
+	{
+		data.bufferCalls.push_back(call);
+	}
+
+	void PostGLBufferCalls()
+	{
+		if (data.bufferCalls.size() <= 0)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, data.buffers["VBO"]);
+			glBufferData(GL_ARRAY_BUFFER, data.vertices.size() * sizeof(Vertex), data.vertices.data(), GL_STATIC_DRAW);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.buffers["EBO"]);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.indices.size() * sizeof(unsigned int), data.indices.data(), GL_STATIC_DRAW);
+
+			return;
+		}
+
+		while (!data.bufferCalls.empty())
+		{
+			auto& call = data.bufferCalls.front();
+
+			if (call.bind == "VBO")
+				glBindBuffer(call.type, data.buffers["VBO"]);
+			else if (call.bind == "EBO")
+				glBindBuffer(call.type, data.buffers["EBO"]);
+			else
+				throw new std::exception("call.bind is f*cked");
+
+			glBufferData(call.type, call.size, call.pointer, call.draw);
+
+			data.bufferCalls.pop_front();
+		}
+	}
+
+	static RenderableObject* Register(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, bool advanced = false, bool completelyReplaceGLPointerCalls = false, const ShaderObject& shader = ShaderManager::GetShader(ShaderType::DEFAULT))
 	{
 		RenderableObject* out = new RenderableObject();
 
@@ -167,6 +333,7 @@ public:
 		out->data.vertices = vertices;
 		out->data.indices = indices;
 		out->data.advanced = advanced;
+		out->data.completelyReplaceDefaultGLPointerCalls = completelyReplaceGLPointerCalls;
 
 		return out;
 	}
@@ -205,6 +372,7 @@ public:
 namespace Renderer
 {
 	extern std::map<std::string, RenderableObject*> renderableObjects;
+	extern std::deque<ShaderCall> shaderCalls;
 	bool drawLines = false;
 
 	void RegisterRenderableObject(RenderableObject* object)
@@ -213,6 +381,53 @@ namespace Renderer
 		//	renderableObjects[object->data.name] = object;
 
 		renderableObjects.insert({object->data.name, object});
+	}
+
+	template<typename T>
+	void RequestShaderCall(const std::string& objectName, const std::string& variableName, T value)
+	{
+		shaderCalls.push_back(ShaderCall::Register(objectName, variableName, typeid(T).name(), &value));
+	}
+
+	void PostShaderCalls()
+	{
+		while (!shaderCalls.empty())
+		{
+			for (auto& [key, value] : renderableObjects)
+			{
+				auto& call = shaderCalls.front();
+
+				//Logger_WriteConsole(call.type, LogLevel::DEBUG);
+
+				if (value->data.name == call.objectName)
+				{
+					if (call.type == "int")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<int*>(call.value));
+					else if (call.type == "float")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<float*>(call.value));
+					else if (call.type == "bool")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<bool*>(call.value));
+
+					else if (call.type == "struct glm::vec<2,float,0>")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::vec2*>(call.value));
+					else if (call.type == "struct glm::vec<3,float,0>")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::vec3*>(call.value));
+					else if (call.type == "struct glm::vec<4,float,0>")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::vec4*>(call.value));
+
+					else if (call.type == "struct glm::mat<2,2,float,0>")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::mat2*>(call.value));
+					else if (call.type == "struct glm::mat<3,3,float,0>")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::mat3*>(call.value));
+					else if (call.type == "struct glm::mat<4,4,float,0>")
+						value->data.shader.SetUniform(call.variableName, *reinterpret_cast<glm::mat4*>(call.value));
+					else
+						Logger_ThrowError("Invalid type", "Graphical issues are imminent", false);
+				}
+
+				shaderCalls.pop_front();
+			}
+		}
 	}
 
 	void RenderObjects(Camera camera)
@@ -252,34 +467,13 @@ namespace Renderer
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, value->data.transform.position);
 			//model = glm::rotate(model, value->data.transform.rotationIndex, value->data.transform.rotation);
-
-			glm::vec3 diffuseColor = glm::vec3{1.0f, 1.0f, 1.0f} * glm::vec3(0.5f);
-			glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
-
-			value->data.shader.SetUniform("viewPos", camera.data.transform.position);
-
-			value->data.shader.SetUniform("dirLight.direction", 0.45994705f, -0.88781524f, 0.015258028f);
-			value->data.shader.SetUniform("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-			value->data.shader.SetUniform("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-			value->data.shader.SetUniform("dirLight.specular", 0.5f, 0.5f, 0.5f);
-
-			value->data.shader.SetUniform("pointLights[0].position", 0.0f, 5.0f, 0.0f);
-			value->data.shader.SetUniform("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-			value->data.shader.SetUniform("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-			value->data.shader.SetUniform("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-			value->data.shader.SetUniform("pointLights[0].constant", 1.0f);
-			value->data.shader.SetUniform("pointLights[0].linear", 0.09f);
-			value->data.shader.SetUniform("pointLights[0].quadratic", 0.032f);
-			value->data.shader.SetUniform("pointLights[0].isActive", true);
-
-			value->data.shader.SetUniform("material.specular", 1.0f, 1.0f, 1.0f);
-			value->data.shader.SetUniform("material.diffuse", 1.0f, 1.0f, 1.0f);
-			value->data.shader.SetUniform("material.shininess", 32.0f);
+			
+			PostShaderCalls();
 
 			value->data.shader.SetUniform("projection", camera.data.matrices.projection);
 			value->data.shader.SetUniform("view", camera.data.matrices.view);
 			value->data.shader.SetUniform("model", model);
-			
+
 			glBindVertexArray(value->data.buffers["VAO"]);
 
 			if(drawLines)
@@ -315,5 +509,6 @@ namespace Renderer
 }
 
 std::map<std::string, RenderableObject*> Renderer::renderableObjects;
+std::deque<ShaderCall> Renderer::shaderCalls;
 
 #endif // !RENERER_HPP

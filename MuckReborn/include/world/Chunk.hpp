@@ -26,7 +26,7 @@ public:
 		data.object = new RenderableObject();
 		noise = new Noise(0.45, 10);
 
-		data.object = RenderableObject::Register("Chunk(" + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z) + ")", {}, {});
+		data.object = RenderableObject::Register("Chunk(" + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z) + ")", {}, {}, false, false, ShaderManager::GetShader(ShaderType::CHUNK));
 		data.object->data.transform.position = position;
 
 		Rebuild();

@@ -69,6 +69,9 @@
     <ClInclude Include="MuckReborn\include\world\World.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MuckReborn\include\rendering\LightingManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MuckReborn\MuckReborn.cpp">
@@ -77,5 +80,11 @@
     <ClCompile Include="glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\muckreborn\shaders\chunkVertex.glsl" />
+    <None Include="assets\muckreborn\shaders\chunkFragment.glsl" />
+    <None Include="assets\muckreborn\shaders\defaultFragment.glsl" />
+    <None Include="assets\muckreborn\shaders\defaultVertex.glsl" />
   </ItemGroup>
 </Project>

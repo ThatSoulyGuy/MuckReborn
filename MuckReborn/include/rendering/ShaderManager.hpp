@@ -13,7 +13,8 @@
 
 enum class ShaderType
 {
-	DEFAULT
+	DEFAULT,
+	CHUNK
 };
 
 struct ShaderObject
@@ -22,7 +23,7 @@ struct ShaderObject
 	std::string vertexPath = "", fragmentPath = "";
 	ShaderType type = ShaderType::DEFAULT;
 
-	unsigned int shaderProgram;
+	unsigned int shaderProgram = 0;
 
 	unsigned int CompileShader(GLenum type, const std::string& source) const  
 	{
@@ -40,6 +41,11 @@ struct ShaderObject
 			glGetShaderInfoLog(shader, 512, NULL, infoLog);
 			std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
 		}
+
+		int error = glGetError();
+
+		if (error != GL_NO_ERROR)
+			Logger_ThrowError(std::to_string(error), fmt::format("OpenGL error: {}", error), false);
 
 		return shader;
 	}
@@ -60,6 +66,11 @@ struct ShaderObject
 			glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 			std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 		}
+
+		int error = glGetError();
+
+		if (error != GL_NO_ERROR)
+			Logger_ThrowError(std::to_string(error), fmt::format("OpenGL error: {}", error), false);
 	}
 
 	void GenerateShader()
@@ -68,6 +79,11 @@ struct ShaderObject
 		unsigned int fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentData);
 
 		LinkProgram(vertexShader, fragmentShader);
+
+		int error = glGetError();
+
+		if (error != GL_NO_ERROR)
+			Logger_ThrowError(std::to_string(error), fmt::format("OpenGL error: {}", error), false);
 
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
@@ -79,7 +95,10 @@ struct ShaderObject
 	}
 
 	template<typename T>
-	void SetUniform(const std::string& name, const T& value) const { };
+	void SetUniform(const std::string& name, const T& value) const 
+	{ 
+		Logger_ThrowError("Overload", "Invalid type: '" + std::string(typeid(T).name()) + "' passed to function", false);
+	};
 
 	template<>
 	void SetUniform<bool>(const std::string& name, const bool& value) const

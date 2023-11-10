@@ -168,6 +168,7 @@
     <ClInclude Include="MuckReborn\include\math\Noise.hpp" />
     <ClInclude Include="MuckReborn\include\math\Transform.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\Camera.hpp" />
+    <ClInclude Include="MuckReborn\include\rendering\LightingManager.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\Model.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\Renderer.hpp" />
     <ClInclude Include="MuckReborn\include\rendering\ShaderManager.hpp" />
@@ -181,6 +182,12 @@
   <ItemGroup>
     <ClCompile Include="glad.c" />
     <ClCompile Include="MuckReborn\MuckReborn.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\muckreborn\shaders\chunkFragment.glsl" />
+    <None Include="assets\muckreborn\shaders\chunkVertex.glsl" />
+    <None Include="assets\muckreborn\shaders\defaultFragment.glsl" />
+    <None Include="assets\muckreborn\shaders\defaultVertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
