@@ -29,7 +29,6 @@ int main()
 	Input::InitInput(window.data.window);
 
 	player.InitalizePlayer({ 0.0f, 0.0f, 0.0f });
-	EventSystem::DispatchEvent(EventType::MR_INIT_EVENT, NULL);
 	
 	model = new Chunk();
 	model->InitalizeChunk({0, 0, 0});

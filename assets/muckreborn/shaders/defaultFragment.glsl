@@ -1,5 +1,4 @@
 #version 330 core
-
 out vec4 FragColor;
 
 struct Material 
@@ -29,8 +28,6 @@ struct PointLight
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-
-    bool isActive;
 };
 
 struct SpotLight 
@@ -51,12 +48,9 @@ struct SpotLight
 
 #define NR_POINT_LIGHTS 4
 
-in vec3 ourColor;
-in vec2 TexCoord;
 in vec3 FragPos;
 in vec3 normal;
 
-uniform sampler2D texture_diffuse1;
 uniform vec3 viewPos;
 uniform DirLight dirLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
@@ -84,15 +78,7 @@ void main()
     vec3 result = CalcDirLight(dirLight, norm, viewDir);
 
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
-    {
-        if(pointLights[i].isActive)
             result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
-    }
-
-    //result += CalcSpotLight(spotLight, norm, FragPos, viewDir);  
-
-    vec3 litColor1 = result * color1.rgb;
-    vec3 litColor2 = result * color2.rgb;
 
     vec3 litColor3 = result * color3.rgb;
     vec3 litColor4 = result * color4.rgb;
