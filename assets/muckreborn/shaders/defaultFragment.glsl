@@ -22,5 +22,4 @@ void main()
     vec4 aoColor = vec4(aoFactor, aoFactor, aoFactor, 1.0);
 
     FragColor *= aoColor;
-    FragColor = mix(color1, color2, factor1);
 }
