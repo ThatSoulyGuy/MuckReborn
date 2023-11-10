@@ -22,7 +22,7 @@ int main()
 	TextureManager::RegisterTexture(Texture::Register("textures/terrain.png", "terrain_atlas"));
 	TextureManager::RegisterTexture(Texture::Register("models/Tisch_t.png", "Tisch_t"));
 
-	window.GenerateWindow("Muck Reborn* 0.0.7", glm::ivec2{ 750, 450 }, glm::vec3{ 0.0f, 0.34f, 0.51f });
+	window.GenerateWindow("Muck Reborn* 0.0.9", glm::ivec2{ 750, 450 }, glm::vec3{ 0.0f, 0.34f, 0.51f });
 	Window::mainWindow = window;
 	EventSystem::DispatchEvent(EventType::MR_PRE_INIT_EVENT, NULL);
 	

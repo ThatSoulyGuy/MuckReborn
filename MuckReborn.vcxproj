@@ -176,6 +176,7 @@
     <ClInclude Include="MuckReborn\include\util\General.hpp" />
     <ClInclude Include="MuckReborn\include\util\Pair.hpp" />
     <ClInclude Include="MuckReborn\include\world\Chunk.hpp" />
+    <ClInclude Include="MuckReborn\include\world\World.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />

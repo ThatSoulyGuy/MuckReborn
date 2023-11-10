@@ -66,6 +66,9 @@
     <ClInclude Include="MuckReborn\include\math\Noise.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MuckReborn\include\world\World.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MuckReborn\MuckReborn.cpp">

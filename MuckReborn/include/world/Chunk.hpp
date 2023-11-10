@@ -24,7 +24,7 @@ public:
 	void InitalizeChunk(const glm::ivec3& position)
 	{
 		data.object = new RenderableObject();
-		noise = new Noise(0.45, 0.85);
+		noise = new Noise(0.45, 10);
 
 		data.object = RenderableObject::Register("Chunk(" + std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(position.z) + ")", {}, {});
 		data.object->data.transform.position = position;
@@ -48,7 +48,7 @@ public:
 
 		for (Vertex& vertex : data.vertices)
 		{
-			float noiseValue = noise->FractalNoise(12, vertex.position.x, vertex.position.z);
+			float noiseValue = noise->FractalNoise(CHUNK_SIZE * 4, vertex.position.x, vertex.position.z);
 
 			vertex.position.y = noiseValue * scale + offset;
 		}
